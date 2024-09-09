@@ -150,6 +150,8 @@ func FirstFactorPOST(delayFunc middlewares.TimingAttackDelayFunc) middlewares.Re
 
 		successful = true
 
+		ctx.Providers.StorageProvider.UpdateUserSignInDateByUsername(ctx, userSession.Username)
+
 		if bodyJSON.Workflow == workflowOpenIDConnect {
 			handleOIDCWorkflowResponse(ctx, &userSession, bodyJSON.TargetURL, bodyJSON.WorkflowID)
 		} else {

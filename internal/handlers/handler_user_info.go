@@ -8,6 +8,7 @@ import (
 
 	"github.com/valyala/fasthttp"
 
+	"github.com/authelia/authelia/v4/internal/authentication"
 	"github.com/authelia/authelia/v4/internal/middlewares"
 	"github.com/authelia/authelia/v4/internal/model"
 	"github.com/authelia/authelia/v4/internal/session"
@@ -101,6 +102,32 @@ func UserInfoGET(ctx *middlewares.AutheliaCtx) {
 	}
 
 	userInfo.DisplayName = userSession.DisplayName
+
+	err = ctx.SetJSONBody(userInfo)
+	if err != nil {
+		ctx.Logger.Errorf("Unable to set user info response in body: %+v", err)
+	}
+}
+
+func AllUsersInfoGET(ctx *middlewares.AutheliaCtx) {
+	var (
+		err      error
+		userInfo []model.UserInfo
+		users    []authentication.UserDetails
+	)
+
+	if users, err = ctx.Providers.UserProvider.ListUsers(); err != nil {
+		ctx.Logger.WithError(err).Error("Error occurred retrieving users")
+		return
+	}
+
+	userInfo, err = ctx.Providers.StorageProvider.LoadAllUsersAttributes(ctx)
+	if err != nil {
+		ctx.Error(fmt.Errorf("unable to load user information: %w", err), messageOperationFailed)
+		return
+	}
+
+	userInfo = MergeUserInfo(ctx, userInfo, users)
 
 	err = ctx.SetJSONBody(userInfo)
 	if err != nil {

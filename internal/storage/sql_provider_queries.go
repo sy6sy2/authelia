@@ -288,6 +288,65 @@ const (
 )
 
 const (
+	queryFmtInsertUserAttributes = `
+	INSERT INTO %s (username)
+	VALUES (?);`
+
+	queryFmtInsertNewUserAttributes = `
+	INSERT INTO %s (username, user_created_at)
+	VALUES (?, ?);`
+
+	queryFmtSelectUserAttributes = `
+	SELECT username, disabled, last_logged_in, password_change_required, last_password_change, logout_required, user_created_at
+	FROM %s
+	ORDER BY id ASC;`
+
+	queryFmtSelectUserByUsername = `
+	SELECT username, disabled, last_logged_in, password_change_required, last_password_change, logout_required, user_created_at
+	FROM %s
+	WHERE username = ?;`
+
+	queryFmtUpdateUserRecordSignInByUsername = `
+	UPDATE %s
+	SET last_logged_in = ?
+	WHERE username = ?;`
+
+	queryFmtUpdateUserRecordDisabledByUsername = `
+	UPDATE %s
+	SET disabled = ?
+	WHERE username = ?;`
+
+	queryFmtSelectDisabledUserByUsername = `
+	SELECT username, disabled, last_logged_in, password_change_required, last_password_change, logout_required, user_created_at
+	FROM %s
+	WHERE disabled = 1AND username = ?;`
+
+	queryFmtSelectDisabledUsers = `
+	SELECT username, disabled, last_logged_in, change_password_required, last_password_change, logout_required, user_created_at
+	FROM %s
+	WHERE disabled;`
+
+	queryFmtDeleteUserAttributesByUsername = `
+	DELETE FROM %s
+	WHERE username = ?;`
+
+	queryFmtUpdateUserRecordPasswordChangedAtByUsername = `
+	UPDATE %s
+	SET last_password_change = ?
+	WHERE username = ?`
+
+	queryFmtUpdateUserRecordRequirePasswordChangeByUsername = `
+	UPDATE %s
+	SET password_change_required = 1
+	WHERE username = ?;`
+
+	queryFmtUpdateUserRecordLogoutRequiredByUsername = `
+	UPDATE %s
+	SET logout_required = ?
+	WHERE username = ?;`
+)
+
+const (
 	queryFmtSelectEncryptionValue = `
 		SELECT (value)
         FROM %s

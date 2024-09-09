@@ -195,6 +195,11 @@ func handleRouter(config *schema.Configuration, providers middlewares.Providers)
 		WithPostMiddlewares(middlewares.RequireElevated).
 		Build()
 
+	RequireAdminUser1FA := middlewares.NewBridgeBuilder(*config, providers).
+		WithPreMiddlewares(middlewares.SecurityHeadersBase, middlewares.SecurityHeadersNoStore, middlewares.SecurityHeadersCSPNone).
+		WithPostMiddlewares(middlewares.RequireAdminUser, middlewares.Require1FA).
+		Build()
+
 	r.HEAD("/api/health", middlewareAPI(handlers.HealthGET))
 	r.GET("/api/health", middlewareAPI(handlers.HealthGET))
 
@@ -277,6 +282,12 @@ func handleRouter(config *schema.Configuration, providers middlewares.Providers)
 	r.GET("/api/user/info", middleware1FA(handlers.UserInfoGET))
 	r.POST("/api/user/info", middleware1FA(handlers.UserInfoPOST))
 	r.POST("/api/user/info/2fa_method", middleware1FA(handlers.MethodPreferencePOST))
+
+	if config.Administration.Enabled && config.Administration.EnableUserManagement {
+		// Information about all users
+		r.GET("/api/admin/users/info", RequireAdminUser1FA(handlers.AllUsersInfoGET))
+		log.Info("Registering UserInfo Admin Endpoint")
+	}
 
 	// User Session Elevation.
 	middlewareDelaySecond := middlewares.ArbitraryDelay(time.Second)

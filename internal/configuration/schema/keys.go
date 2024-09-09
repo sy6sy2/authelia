@@ -13,7 +13,7 @@ var Keys = []string{
 	"default_2fa_method",
 	"administration.enabled",
 	"administration.admin_group",
-	"administration.disable_user_management",
+	"administration.enable_user_management",
 	"log.level",
 	"log.format",
 	"log.file_path",

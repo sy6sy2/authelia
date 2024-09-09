@@ -152,6 +152,60 @@ func (p *LDAPUserProvider) GetDetails(username string) (details *UserDetails, er
 	}, nil
 }
 
+func (p *LDAPUserProvider) ListUsers() (users []UserDetails, err error) {
+	var client LDAPClient
+	if client, err = p.connect(); err != nil {
+		return nil, fmt.Errorf("failed to connect to LDAP server: %w", err)
+	}
+	defer client.Close()
+
+	request := ldap.NewSearchRequest(
+		p.usersBaseDN,
+		ldap.ScopeWholeSubtree, ldap.NeverDerefAliases,
+		0, 0, false,
+		"(objectClass=inetOrgPerson)",
+		p.usersAttributes,
+		nil,
+	)
+
+	p.log.
+		WithField("base_dn", request.BaseDN).
+		WithField("filter", request.Filter).
+		WithField("attr", request.Attributes).
+		WithField("scope", request.Scope).
+		WithField("deref", request.DerefAliases).
+		Trace("Performing search for all users")
+
+	var result *ldap.SearchResult
+	if result, err = p.search(client, request); err != nil {
+		return nil, fmt.Errorf("failed to search for users: %w", err)
+	}
+
+	users = make([]UserDetails, 0, len(result.Entries))
+
+	for _, entry := range result.Entries {
+		profile, err := p.getUserProfileResultToProfile(entry.GetAttributeValue(p.config.Attributes.Username), &ldap.SearchResult{Entries: []*ldap.Entry{entry}})
+		if err != nil {
+			p.log.WithError(err).Warnf("Failed to process user entry: %s", entry.DN)
+			continue
+		}
+
+		groups, err := p.getUserGroups(client, profile.Username, profile)
+		if err != nil {
+			p.log.WithError(err).Warnf("Failed to get groups for user: %s", profile.Username)
+		}
+
+		users = append(users, UserDetails{
+			Username:    profile.Username,
+			DisplayName: profile.DisplayName,
+			Emails:      profile.Emails,
+			Groups:      groups,
+		})
+	}
+
+	return users, nil
+}
+
 // UpdatePassword update the password of the given user.
 func (p *LDAPUserProvider) UpdatePassword(username, password string) (err error) {
 	var (
