@@ -284,9 +284,9 @@ func handleRouter(config *schema.Configuration, providers middlewares.Providers)
 	r.POST("/api/user/info/2fa_method", middleware1FA(handlers.MethodPreferencePOST))
 
 	if config.Administration.Enabled && config.Administration.EnableUserManagement {
-		// Information about all users
+		// Information about all users.
 		r.GET("/api/admin/users/info", RequireAdminUser1FA(handlers.AllUsersInfoGET))
-		log.Info("Registering UserInfo Admin Endpoint")
+		r.POST("/api/admin/users/info", RequireAdminUser1FA(handlers.UserInfoChangePOST))
 	}
 
 	// User Session Elevation.

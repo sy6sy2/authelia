@@ -24,7 +24,7 @@ func Require1FA(next RequestHandler) RequestHandler {
 
 func RequireAdminUser(next RequestHandler) RequestHandler {
 	return func(ctx *AutheliaCtx) {
-		adminGroup := string(ctx.Configuration.Administration.AdminGroup)
+		adminGroup := ctx.Configuration.Administration.AdminGroup
 
 		s, err := ctx.GetSession()
 

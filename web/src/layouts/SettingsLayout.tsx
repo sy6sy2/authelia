@@ -1,6 +1,6 @@
 import React, { ReactNode, SyntheticEvent, useCallback, useEffect, useState } from "react";
 
-import { Close, Dashboard, Menu, Security, SystemSecurityUpdateGood } from "@mui/icons-material";
+import { Close, Dashboard, Menu, People, Security, SystemSecurityUpdateGood } from "@mui/icons-material";
 import {
     AppBar,
     Box,
@@ -22,6 +22,7 @@ import {
     SecuritySubRoute,
     SettingsRoute,
     SettingsTwoFactorAuthenticationSubRoute,
+    SettingsUserManagementSubRoute,
 } from "@constants/Routes";
 import { useRouterNavigate } from "@hooks/RouterNavigate";
 
@@ -160,6 +161,12 @@ const navItems: NavItem[] = [
         text: "Two-Factor Authentication",
         pathname: `${SettingsRoute}${SettingsTwoFactorAuthenticationSubRoute}`,
         icon: <SystemSecurityUpdateGood color={"primary"} />,
+    },
+    {
+        keyname: "users",
+        text: "User Management",
+        pathname: `${SettingsRoute}${SettingsUserManagementSubRoute}`,
+        icon: <People color={"primary"} />,
     },
     { keyname: "close", text: "Close", pathname: IndexRoute, icon: <Close color={"error"} /> },
 ];

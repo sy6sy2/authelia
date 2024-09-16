@@ -9,7 +9,7 @@ import (
 // UserInfo represents the user information required by the web UI.
 type UserInfo struct {
 
-	// The users username
+	// The users username.
 	Username string `db:"-" json:"username"`
 
 	// The users display name.
@@ -26,16 +26,16 @@ type UserInfo struct {
 	// The last time the user logged in successfully.
 	LastLoggedIn *time.Time `db:"last_logged_in" json:"last_logged_in"`
 
-	// True if this user is required to change their password
+	// True if this user is required to change their password.
 	PasswordChangeRequired bool `db:"password_change_required" json:"password_change_required"`
 
-	// The last time the user changed their password
+	// The last time the user changed their password.
 	LastPasswordChange *time.Time `db:"last_password_change" json:"last_password_change"`
 
 	// True if the user should be logged out.
 	LogoutRequired bool `db:"logout_required" json:"logout_required"`
 
-	// The time when the user was created
+	// The time when the user was created.
 	UserCreatedAt *time.Time `db:"user_created_at" json:"user_created_at"`
 
 	// The preferred 2FA method.
@@ -49,6 +49,13 @@ type UserInfo struct {
 
 	// True if a duo device has been configured as the preferred.
 	HasDuo bool `db:"has_duo" json:"has_duo" valid:"required"`
+}
+
+type UserInfoChanges struct {
+	Username               string `json:"username"`
+	PasswordChangeRequired bool   `json:"password_change_required"`
+	LogoutRequired         bool   `json:"logout_required"`
+	Disabled               bool   `json:"disabled"`
 }
 
 // SetDefaultPreferred2FAMethod configures the default method based on what is configured as available and the users available methods.

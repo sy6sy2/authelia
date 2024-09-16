@@ -77,8 +77,8 @@ func ctxLogEvent(ctx *middlewares.AutheliaCtx, username, description string, bod
 	}
 }
 
-// MergeUserInfo combines the list of attributes in userInfo with the list of users in users
-func MergeUserInfo(ctx *middlewares.AutheliaCtx, userInfo []model.UserInfo, users []authentication.UserDetails) []model.UserInfo {
+// MergeUserInfoAndDetails combines the list of attributes in userInfo with the list of users in users.
+func MergeUserInfoAndDetails(userInfo []model.UserInfo, users []authentication.UserDetails) []model.UserInfo {
 	userDetailsMap := make(map[string]authentication.UserDetails)
 	userInfoMap := make(map[string]bool)
 

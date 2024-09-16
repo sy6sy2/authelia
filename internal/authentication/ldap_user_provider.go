@@ -154,9 +154,11 @@ func (p *LDAPUserProvider) GetDetails(username string) (details *UserDetails, er
 
 func (p *LDAPUserProvider) ListUsers() (users []UserDetails, err error) {
 	var client LDAPClient
+
 	if client, err = p.connect(); err != nil {
 		return nil, fmt.Errorf("failed to connect to LDAP server: %w", err)
 	}
+
 	defer client.Close()
 
 	request := ldap.NewSearchRequest(
@@ -177,6 +179,7 @@ func (p *LDAPUserProvider) ListUsers() (users []UserDetails, err error) {
 		Trace("Performing search for all users")
 
 	var result *ldap.SearchResult
+
 	if result, err = p.search(client, request); err != nil {
 		return nil, fmt.Errorf("failed to search for users: %w", err)
 	}

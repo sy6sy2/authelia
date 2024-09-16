@@ -74,6 +74,7 @@ const (
 	messageIncorrectPassword                     = "Incorrect Password"
 	messageMFAValidationFailed                   = "Authentication failed, please retry later."
 	messagePasswordWeak                          = "Your supplied password does not meet the password policy requirements."
+	messageUnableToModifyUser                    = "Unable to modify specified user."
 )
 
 const (

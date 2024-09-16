@@ -187,7 +187,7 @@ func (m *FileUserDatabase) GetAllUsers() map[string]FileUserDatabaseUserDetails 
 	m.RLock()
 	defer m.RUnlock()
 
-	// Create a copy of the users map to avoid concurrent access issues
+	// Create a copy of the users map to avoid concurrent access issues.
 	usersCopy := make(map[string]FileUserDatabaseUserDetails, len(m.Users))
 	for username, details := range m.Users {
 		usersCopy[username] = details

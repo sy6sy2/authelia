@@ -23,8 +23,9 @@ export const CompleteDuoDeviceSelectionPath = basePath + "/api/secondfactor/duo_
 export const CompletePushNotificationSignInPath = basePath + "/api/secondfactor/duo";
 export const CompleteTOTPSignInPath = basePath + "/api/secondfactor/totp";
 
-
-export const GetUsersPath = basePath + "/api/admin/users/info";
+export const AdminUserInfoPath = basePath + "/api/admin/users/info";
+export const AdminDeleteUserPath = basePath + "/api/admin/users/delete";
+export const AdminCreateUserPath = basePath + "api/admin/users/create";
 
 export const InitiateResetPasswordIdentityVerificationPath = basePath + "/api/reset-password/identity/start";
 export const IdentityVerification = basePath + "/api/reset-password/identity/finish";

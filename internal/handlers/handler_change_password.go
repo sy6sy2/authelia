@@ -71,7 +71,10 @@ func ChangePasswordPOST(ctx *middlewares.AutheliaCtx) {
 
 	ctx.Logger.Debugf("User %s has changed their password", username)
 
-	// Reset the request.
+	if err = ctx.Providers.StorageProvider.UpdatePasswordChangedDateByUsername(ctx, userSession.Username); err != nil {
+		ctx.Logger.WithError(err).Errorf("Could not update %s, for user '%s'", "last password change time", userSession.Username)
+	}
+
 	userSession.PasswordResetUsername = nil
 
 	if err = ctx.SaveSession(userSession); err != nil {

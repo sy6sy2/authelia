@@ -30,14 +30,17 @@ type Provider interface {
 	// CreateNewUserAttributes add a new user's attribute record to the storage provider along with the user's creation date.
 	CreateNewUserAttributes(ctx context.Context, username string) (err error)
 
-	//LoadAllUsersAttributes load all user attributes from the database.
+	// LoadAllUsersAttributes load all user attributes from the database.
 	LoadAllUsersAttributes(ctx context.Context) (allUserAttributes []model.UserInfo, err error)
 
-	// LoadUserAttributes load the user attributes for a specific user
+	// LoadUserAttributes load the user attributes for a specific user.
 	LoadUserAttributesByUsername(ctx context.Context, username string) (userAttributes model.UserInfo, err error)
 
 	// UpdateUserSignInDateByUsername save the current time as the last time a user logged in successfully.
 	UpdateUserSignInDateByUsername(ctx context.Context, username string) (err error)
+
+	// UpdateUserAttributesByUsername updates multiple user attribute fields at once.
+	UpdateUserAttributesByUsername(ctx context.Context, disabled bool, password_change_required bool, logout_required bool, username string) (rowsAffected int64, err error)
 
 	// UpdateUserDisabledByUsername save the current disabled status for a username to the storage provider.
 	UpdateUserDisabledByUsername(ctx context.Context, username string, disabled bool) (err error)
@@ -57,7 +60,7 @@ type Provider interface {
 	// UpdateRequirePasswordChangeByUsername save the desired state for the require password change flag.
 	UpdateRequirePasswordChangeByUsername(ctx context.Context, username string, needPasswordChange bool) (err error)
 
-	// UpdateLogoutRequiredByUsername save the desired state for the require logout flag
+	// UpdateLogoutRequiredByUsername save the desired state for the require logout flag.
 	UpdateLogoutRequiredByUsername(ctx context.Context, username string, logoutRequired bool) (err error)
 
 	/*
@@ -70,8 +73,14 @@ type Provider interface {
 	// LoadPreferred2FAMethod load the preferred method for 2FA for a username from the storage provider.
 	LoadPreferred2FAMethod(ctx context.Context, username string) (method string, err error)
 
-	// LoadUserInfo loads the model.UserInfo from the storage provider for a specific user
+	// LoadUserInfo loads the model.UserInfo from the storage provider for a specific user.
 	LoadUserInfo(ctx context.Context, username string) (info model.UserInfo, err error)
+
+	// LoadAllUserInfo loads the model.UserInfo from the storage provider for all users.
+	LoadAllUserInfo(ctx context.Context) (info []model.UserInfo, err error)
+
+	// LoadAllUserInfoAndAttributes loads the model.UserInfo from the storage provider for all users.
+	LoadAllUserInfoAndAttributes(ctx context.Context) (info []model.UserInfo, err error)
 
 	/*
 		Implementation for User Opaque Identifiers.

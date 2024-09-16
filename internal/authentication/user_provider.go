@@ -13,5 +13,5 @@ type UserProvider interface {
 	GetDetails(username string) (details *UserDetails, err error)
 	UpdatePassword(username string, newPassword string) (err error)
 	ChangePassword(username string, oldPassword string, newPassword string) (err error)
-	ListUsers() ([]UserDetails, error)
+	ListUsers() (userList []UserDetails, err error)
 }

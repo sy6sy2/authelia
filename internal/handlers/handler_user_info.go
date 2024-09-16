@@ -109,6 +109,7 @@ func UserInfoGET(ctx *middlewares.AutheliaCtx) {
 	}
 }
 
+// UserInfoGET gets the info related to all users.
 func AllUsersInfoGET(ctx *middlewares.AutheliaCtx) {
 	var (
 		err      error
@@ -121,13 +122,12 @@ func AllUsersInfoGET(ctx *middlewares.AutheliaCtx) {
 		return
 	}
 
-	userInfo, err = ctx.Providers.StorageProvider.LoadAllUsersAttributes(ctx)
-	if err != nil {
-		ctx.Error(fmt.Errorf("unable to load user information: %w", err), messageOperationFailed)
+	if userInfo, err = ctx.Providers.StorageProvider.LoadAllUserInfoAndAttributes(ctx); err != nil {
+		ctx.Error(fmt.Errorf("unable to load user attributes: %w", err), messageOperationFailed)
 		return
 	}
 
-	userInfo = MergeUserInfo(ctx, userInfo, users)
+	userInfo = MergeUserInfoAndDetails(userInfo, users)
 
 	err = ctx.SetJSONBody(userInfo)
 	if err != nil {
