@@ -61,7 +61,10 @@ func NewRodSession(options ...RodSessionOpt) (session *RodSession, err error) {
 		opts.provider = NewRodSuiteCredentials()
 	}
 
-	var browserPath string
+	var (
+		browserPath string
+		l           *launcher.Launcher
+	)
 
 	if browserPath, err = GetBrowserPath(); err != nil {
 		return nil, err
@@ -77,14 +80,22 @@ func NewRodSession(options ...RodSessionOpt) (session *RodSession, err error) {
 		motion = 0 * time.Second
 	}
 
-	l := launcher.New().
+	l = launcher.New().
 		Bin(browserPath).
 		Proxy(opts.proxy).
 		Headless(headless).
-		Devtools(true).
-		Set("disable-gpu")
-	url := l.MustLaunch()
+		Devtools(true)
 
+	if os.Getenv("CI") == t {
+		l = launcher.New().
+			Bin(browserPath).
+			Proxy(opts.proxy).
+			Headless(headless).
+			Devtools(true).
+			Set("disable-gpu")
+	}
+
+	url := l.MustLaunch()
 	browser := rod.New().
 		ControlURL(url).
 		Trace(trace).
