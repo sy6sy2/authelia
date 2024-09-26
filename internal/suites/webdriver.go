@@ -81,7 +81,8 @@ func NewRodSession(options ...RodSessionOpt) (session *RodSession, err error) {
 		Bin(browserPath).
 		Proxy(opts.proxy).
 		Headless(headless).
-		Devtools(true)
+		Devtools(true).
+		Set("disable-gpu")
 	url := l.MustLaunch()
 
 	browser := rod.New().
