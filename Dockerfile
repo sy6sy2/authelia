@@ -1,28 +1,26 @@
 # ===================================
 # ===== Authelia official image =====
 # ===================================
-FROM alpine:3.20.3@sha256:beefdbd8a1da6d2915566fde36db9db0b524eb737fc57cd1367effd16dc0d06d
+ARG BASE="authelia/base:latest"
+
+FROM ${BASE}
 
 ARG TARGETOS
 ARG TARGETARCH
 
 WORKDIR /app
 
-# Set environment variables
-ENV PATH="/app:${PATH}" \
-    PUID=0 \
-    PGID=0 \
-    X_AUTHELIA_CONFIG="/config/configuration.yml"
+ENV \
+	PATH="/app:${PATH}" \
+	PUID=0 \
+	PGID=0 \
+	X_AUTHELIA_CONFIG="/config/configuration.yml"
 
-RUN \
-	apk --no-cache add ca-certificates su-exec tzdata wget
+COPY --link LICENSE entrypoint.sh healthcheck.sh ./
 
-COPY LICENSE .healthcheck.env entrypoint.sh healthcheck.sh ./
+COPY --link --chmod=666 .healthcheck.env ./
 
-RUN \
-	chmod 0666 /app/.healthcheck.env
-
-COPY authelia-${TARGETOS}-${TARGETARCH}-musl ./authelia
+COPY --link authelia-${TARGETOS}-${TARGETARCH} ./authelia
 
 EXPOSE 9091
 
