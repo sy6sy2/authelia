@@ -672,7 +672,7 @@ func TestShouldNotPanicJWKNilKey(t *testing.T) {
 	assert.Len(t, val.Warnings(), 0)
 
 	require.NotPanics(t, func() {
-		validator.ValidateIdentityProviders(validator.NewValidateCtx(), &config.IdentityProviders, val)
+		validator.ValidateIdentityProviders(validator.NewValidateCtx(), config, val)
 	})
 
 	assert.Len(t, val.Errors(), 5)
@@ -698,7 +698,7 @@ func TestShouldDisableOIDCEntropy(t *testing.T) {
 
 	assert.Equal(t, -1, config.IdentityProviders.OIDC.MinimumParameterEntropy)
 
-	validator.ValidateIdentityProviders(validator.NewValidateCtx(), &config.IdentityProviders, val)
+	validator.ValidateIdentityProviders(validator.NewValidateCtx(), config, val)
 
 	assert.Len(t, val.Errors(), 1)
 	require.Len(t, val.Warnings(), 2)
@@ -719,7 +719,7 @@ func TestShouldDisableOIDCModern(t *testing.T) {
 
 	val.Clear()
 
-	validator.ValidateIdentityProviders(validator.NewValidateCtx(), &config.IdentityProviders, val)
+	validator.ValidateIdentityProviders(validator.NewValidateCtx(), config, val)
 
 	require.Len(t, val.Errors(), 2)
 	require.Len(t, val.Warnings(), 1)
