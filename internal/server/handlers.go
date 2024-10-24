@@ -283,10 +283,16 @@ func handleRouter(config *schema.Configuration, providers middlewares.Providers)
 	r.POST("/api/user/info", middleware1FA(handlers.UserInfoPOST))
 	r.POST("/api/user/info/2fa_method", middleware1FA(handlers.MethodPreferencePOST))
 
-	if config.Administration.Enabled && config.Administration.EnableUserManagement {
+	if config.Administration.Enabled {
+		r.GET("/api/admin/config", RequireAdminUser1FA(handlers.AdminConfigGET))
+		if config.Administration.EnableUserManagement {
+			r.GET("/api/admin/users/info", RequireAdminUser1FA(handlers.AllUsersInfoGET))
+
+			r.POST("/api/admin/user/", RequireAdminUser1FA(handlers.ChangeUserPOST))
+			r.PUT("/api/admin/user/", RequireAdminUser1FA(handlers.CreateUserPOST))
+			r.DELETE("/api/admin/user/", RequireAdminUser1FA(handlers.DeleteUserDELETE))
+		}
 		// Information about all users.
-		r.GET("/api/admin/users/info", RequireAdminUser1FA(handlers.AllUsersInfoGET))
-		r.POST("/api/admin/users/info", RequireAdminUser1FA(handlers.UserInfoChangePOST))
 	}
 
 	// User Session Elevation.

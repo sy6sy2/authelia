@@ -1,50 +1,71 @@
 package handlers
 
 import (
+	"reflect"
+
+	"github.com/authelia/authelia/v4/internal/authentication"
 	"github.com/authelia/authelia/v4/internal/middlewares"
-	"github.com/authelia/authelia/v4/internal/model"
+	"github.com/authelia/authelia/v4/internal/session"
+	"github.com/valyala/fasthttp"
 )
 
-type userManagementRequestBody struct {
-	UserChanges []model.UserInfoChanges `json:"user_changes"`
+type changeUserRequestBody struct {
+	Username    string   `json:"username"`
+	DisplayName string   `json:"display_name"`
+	Email       string   `json:"email"`
+	Groups      []string `json:"groups"`
 }
 
-func UserInfoChangePOST(ctx *middlewares.AutheliaCtx) {
+func ChangeUserPOST(ctx *middlewares.AutheliaCtx) {
 	var (
-		err               error
-		totalRowsAffected int64
-		rowsAffected      int64
+		err         error
+		requestBody changeUserRequestBody
+		userDetails *authentication.UserDetails
+		adminUser   session.UserSession
 	)
 
-	var requestBody userManagementRequestBody
+	if adminUser, err = ctx.GetSession(); err != nil {
+		ctx.Logger.Error("error retrieving admin session")
+		return
+	}
 
 	if err = ctx.ParseBody(&requestBody); err != nil {
 		ctx.Error(err, messageUnableToModifyUser)
 		return
 	}
 
-	if len(requestBody.UserChanges) == 0 {
-		ctx.Logger.Debugf("request body is empty, no users changed")
+	if len(requestBody.Username) == 0 {
+		ctx.Logger.Debugf("username is blank, no users changed")
 		return
 	}
 
-	for _, userInfo := range requestBody.UserChanges {
-		if userInfo.Username == "" {
-			ctx.Logger.Errorf("username is required")
+	if userDetails, err = ctx.Providers.UserProvider.GetDetails(requestBody.Username); err != nil {
+		ctx.Logger.WithError(err).Error("Error retrieving details for user '%s': %s", requestBody.Username, err)
+	}
+
+	if userDetails.DisplayName != requestBody.DisplayName {
+		if err = ctx.Providers.UserProvider.ChangeDisplayName(requestBody.Username, requestBody.DisplayName); err != nil {
+			ctx.Logger.WithError(err).Errorf("Error changing display name to '%s' for user '%s'", requestBody.DisplayName, requestBody.Username)
 			return
 		}
+		ctx.Logger.Debugf("User '%s' display name changed to '%s' by administrator: '%s'", requestBody.Username, requestBody.DisplayName, adminUser.Username)
 
-		rowsAffected, err = ctx.Providers.StorageProvider.UpdateUserAttributesByUsername(ctx, userInfo.Disabled, userInfo.PasswordChangeRequired, userInfo.LogoutRequired, userInfo.Username)
-
-		totalRowsAffected += rowsAffected
+	}
+	if userDetails.Emails[0] != requestBody.Email {
+		if err = ctx.Providers.UserProvider.ChangeEmail(requestBody.Username, requestBody.Email); err != nil {
+			ctx.Logger.WithError(err).Error("Error changing email for user '%s'", requestBody.Username)
+			return
+		}
+		ctx.Logger.Debugf("User '%s' email changed to '%s' by administrator: '%s'", requestBody.Username, requestBody.Email, adminUser.Username)
 	}
 
-	if err != nil {
-		ctx.Logger.WithError(err).Error("Error occurred modifying users")
-		ctx.Response.SetStatusCode(500)
-
-		return
+	if !reflect.DeepEqual(userDetails.Groups, requestBody.Groups) {
+		if err = ctx.Providers.UserProvider.ChangeGroups(requestBody.Username, requestBody.Groups); err != nil {
+			ctx.Logger.WithError(err).Error("Error changing groups for user '%s'", requestBody.Username)
+			return
+		}
+		ctx.Logger.Debugf("User '%s' groups changed to '%s' by administrator: '%s'", requestBody.Username, requestBody.Groups, adminUser.Username)
 	}
 
-	ctx.Response.SetStatusCode(200)
+	ctx.Response.SetStatusCode(fasthttp.StatusOK)
 }

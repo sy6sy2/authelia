@@ -52,10 +52,13 @@ type UserInfo struct {
 }
 
 type UserInfoChanges struct {
-	Username               string `json:"username"`
-	PasswordChangeRequired bool   `json:"password_change_required"`
-	LogoutRequired         bool   `json:"logout_required"`
-	Disabled               bool   `json:"disabled"`
+	Username               string   `json:"username"`
+	DisplayName            string   `json:"display_name"`
+	Emails                 []string `json:"emails"`
+	Groups                 []string `json:"groups"`
+	PasswordChangeRequired bool     `json:"password_change_required"`
+	LogoutRequired         bool     `json:"logout_required"`
+	Disabled               bool     `json:"disabled"`
 }
 
 // SetDefaultPreferred2FAMethod configures the default method based on what is configured as available and the users available methods.

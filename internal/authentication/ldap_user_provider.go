@@ -341,6 +341,133 @@ func (p *LDAPUserProvider) ChangePassword(username, oldPassword string, newPassw
 	return nil
 }
 
+// ChangeDisplayName changes the display name for a specific user
+func (p *LDAPUserProvider) ChangeDisplayName(username, newDisplayName string) (err error) {
+	var (
+		client  LDAPClient
+		profile *ldapUserProfile
+	)
+
+	if client, err = p.connect(); err != nil {
+		return fmt.Errorf("unable to change display name for user '%s': %w", username, err)
+	}
+	defer client.Close()
+
+	if profile, err = p.getUserProfile(client, username); err != nil {
+		return fmt.Errorf("unable to change display name for user '%s': %w", username, err)
+	}
+
+	modifyRequest := ldap.NewModifyRequest(profile.DN, nil)
+
+	modifyRequest.Replace(ldapAttrCommonName, []string{newDisplayName})
+
+	if err = p.modify(client, modifyRequest); err != nil {
+		return fmt.Errorf("unable to change display name for user '%s': %w", username, err)
+	}
+
+	return nil
+}
+
+// ChangeEmail changes the email for a specific user
+func (p *LDAPUserProvider) ChangeEmail(username, newEmail string) (err error) {
+	var (
+		client  LDAPClient
+		profile *ldapUserProfile
+	)
+
+	if client, err = p.connect(); err != nil {
+		return fmt.Errorf("unable to change email for user '%s': %w", username, err)
+	}
+	defer client.Close()
+
+	if profile, err = p.getUserProfile(client, username); err != nil {
+		return fmt.Errorf("unable to change email for user '%s': %w", username, err)
+	}
+
+	modifyRequest := ldap.NewModifyRequest(profile.DN, nil)
+
+	modifyRequest.Replace(ldapAttrMail, []string{newEmail})
+
+	if err = p.modify(client, modifyRequest); err != nil {
+		return fmt.Errorf("unable to change email for user '%s': %w", username, err)
+	}
+
+	return nil
+}
+
+func (p *LDAPUserProvider) ChangeGroups(username string, newGroups []string) (err error) {
+	var (
+		client  LDAPClient
+		profile *ldapUserProfile
+	)
+
+	if client, err = p.connect(); err != nil {
+		return fmt.Errorf("unable to change groups for user '%s': %w", username, err)
+	}
+	defer client.Close()
+
+	if profile, err = p.getUserProfile(client, username); err != nil {
+		return fmt.Errorf("unable to change groups for user '%s': %w", username, err)
+	}
+
+	// Get the current groups of the user
+	currentGroups, err := p.getUserGroups(client, username, profile)
+	if err != nil {
+		return fmt.Errorf("unable to retrieve current groups for user '%s': %w", username, err)
+	}
+
+	// Prepare the modify request
+	modifyRequest := ldap.NewModifyRequest(profile.DN, nil)
+
+	// Remove all current group memberships
+	for _, group := range currentGroups {
+		groupDN, err := p.getGroupDN(client, group)
+		if err != nil {
+			return fmt.Errorf("unable to get DN for group '%s': %w", group, err)
+		}
+		modifyRequest.Delete(p.config.Attributes.MemberOf, []string{groupDN})
+	}
+
+	// Add new group memberships
+	for _, group := range newGroups {
+		groupDN, err := p.getGroupDN(client, group)
+		if err != nil {
+			return fmt.Errorf("unable to get DN for group '%s': %w", group, err)
+		}
+		modifyRequest.Add(p.config.Attributes.MemberOf, []string{groupDN})
+	}
+
+	// Perform the modification
+	if err = p.modify(client, modifyRequest); err != nil {
+		return fmt.Errorf("unable to change groups for user '%s': %w", username, err)
+	}
+
+	return nil
+}
+
+// getGroupDN is a helper function to get the DN of a group given its name
+func (p *LDAPUserProvider) getGroupDN(client LDAPClient, groupName string) (string, error) {
+	searchRequest := ldap.NewSearchRequest(
+		p.groupsBaseDN,
+		ldap.ScopeWholeSubtree, ldap.NeverDerefAliases,
+		0, 0, false,
+		fmt.Sprintf("(&(objectClass=group)(%s=%s))", p.config.Attributes.GroupName, ldap.EscapeFilter(groupName)),
+		[]string{"dn"},
+		nil,
+	)
+
+	result, err := p.search(client, searchRequest)
+	if err != nil {
+		return "", fmt.Errorf("error searching for group '%s': %w", groupName, err)
+	}
+
+	if len(result.Entries) == 0 {
+		return "", fmt.Errorf("group '%s' not found", groupName)
+	}
+
+	return result.Entries[0].DN, nil
+}
+
 func (p *LDAPUserProvider) connect() (client LDAPClient, err error) {
 	return p.connectCustom(p.config.Address.String(), p.config.User, p.config.Password, p.config.StartTLS, p.dialOpts...)
 }

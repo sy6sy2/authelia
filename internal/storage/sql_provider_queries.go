@@ -319,6 +319,11 @@ const (
 	FROM %s
 	ORDER BY id ASC;`
 
+	queryFmtSelectMultipleUserAttributesByUsername = `
+	SELECT username, disabled, last_logged_in, password_change_required, last_password_change, logout_required, user_created_at
+	FROM %s
+	WHERE username IN (?);`
+
 	queryFmtSelectUserByUsername = `
 	SELECT username, disabled, last_logged_in, password_change_required, last_password_change, logout_required, user_created_at
 	FROM %s

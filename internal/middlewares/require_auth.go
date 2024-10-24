@@ -22,6 +22,7 @@ func Require1FA(next RequestHandler) RequestHandler {
 	}
 }
 
+// RequireAdminUser checks if user has the correct admin group to execute the next handler.
 func RequireAdminUser(next RequestHandler) RequestHandler {
 	return func(ctx *AutheliaCtx) {
 		adminGroup := ctx.Configuration.Administration.AdminGroup

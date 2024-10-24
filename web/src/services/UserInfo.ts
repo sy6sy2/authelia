@@ -9,6 +9,7 @@ export interface UserInfoPayload {
     display_name: string;
     username: string;
     emails: string[];
+    groups: string[];
     disabled?: boolean;
     last_logged_in?: Date;
     password_change_required?: boolean;

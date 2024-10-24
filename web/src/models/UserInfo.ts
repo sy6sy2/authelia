@@ -4,6 +4,7 @@ export interface UserInfo {
     username: string;
     display_name: string;
     emails: string[];
+    groups: string[];
     disabled?: boolean;
     last_logged_in?: Date;
     password_change_required?: boolean;

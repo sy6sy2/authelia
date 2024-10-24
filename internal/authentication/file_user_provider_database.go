@@ -185,6 +185,7 @@ func (m *FileUserDatabase) GetUserDetails(username string) (user FileUserDatabas
 
 func (m *FileUserDatabase) GetAllUsers() map[string]FileUserDatabaseUserDetails {
 	m.RLock()
+
 	defer m.RUnlock()
 
 	// Create a copy of the users map to avoid concurrent access issues.

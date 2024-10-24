@@ -43,6 +43,7 @@ func NewSQLProvider(config *schema.Configuration, name, driverName, dataSourceNa
 		sqlInsertNewUserAttributes:                          fmt.Sprintf(queryFmtInsertNewUserAttributes, tableUserAttributes),
 		sqlInsertExistingUserAtLoginAttributes:              fmt.Sprintf(queryFmtInsertNewUserAtLoginAttributes, tableUserAttributes),
 		sqlSelectUserAttributes:                             fmt.Sprintf(queryFmtSelectUserAttributes, tableUserAttributes),
+		sqlSelectMultipleUserAttributesByUsername:           fmt.Sprintf(queryFmtSelectMultipleUserAttributesByUsername, tableUserAttributes),
 		sqlSelectUserAttributesByUsername:                   fmt.Sprintf(queryFmtSelectUserByUsername, tableUserAttributes),
 		sqlSelectAllUserInfoAndAttributes:                   fmt.Sprintf(queryFmtSelectAllUserInfoAndAttributes, tableUserPreferences, tableUserAttributes, tableTOTPConfigurations, tableWebAuthnCredentials, tableDuoDevices),
 		sqlUpdateUserAttributesByUsername:                   fmt.Sprintf(queryFmtUpdateUserAttributesByUsername, tableUserAttributes),
@@ -195,6 +196,7 @@ type SQLProvider struct {
 	sqlInsertNewUserAttributes                          string
 	sqlInsertExistingUserAtLoginAttributes              string
 	sqlSelectUserAttributes                             string
+	sqlSelectMultipleUserAttributesByUsername           string
 	sqlSelectUserAttributesByUsername                   string
 	sqlSelectAllUserInfoAndAttributes                   string
 	sqlUpdateUserAttributesByUsername                   string
@@ -472,6 +474,57 @@ func (p *SQLProvider) CreateExistingUserAttributesAtLogin(ctx context.Context, u
 // LoadAllUsersAttributes load all user attributes from the database.
 func (p *SQLProvider) LoadAllUsersAttributes(ctx context.Context) (allUserAttributes []model.UserInfo, err error) {
 	rows, err := p.db.QueryContext(ctx, p.sqlSelectUserAttributes)
+	if err != nil {
+		return nil, fmt.Errorf("error querying user attributes: %w", err)
+	}
+	defer rows.Close()
+
+	var users []model.UserInfo
+
+	for rows.Next() {
+		var user model.UserInfo
+
+		var lastLoggedIn, lastPasswordChange, userCreatedAt sql.NullTime
+
+		err := rows.Scan(
+			&user.Username,
+			&user.Disabled,
+			&lastLoggedIn,
+			&user.PasswordChangeRequired,
+			&lastPasswordChange,
+			&user.LogoutRequired,
+			&userCreatedAt,
+		)
+
+		if err != nil {
+			return nil, fmt.Errorf("error scanning user attributes: %w", err)
+		}
+
+		if lastLoggedIn.Valid {
+			user.LastLoggedIn = &lastLoggedIn.Time
+		}
+
+		if lastPasswordChange.Valid {
+			user.LastPasswordChange = &lastPasswordChange.Time
+		}
+
+		if userCreatedAt.Valid {
+			user.UserCreatedAt = &userCreatedAt.Time
+		}
+
+		users = append(users, user)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating user attributes: %w", err)
+	}
+
+	return users, nil
+}
+
+// LoadAllUsersAttributes load all user attributes from the database.
+func (p *SQLProvider) LoadMultipleUsersAttributesByUsername(ctx context.Context, usernames []string) (allUserAttributes []model.UserInfo, err error) {
+	rows, err := p.db.QueryContext(ctx, p.sqlSelectMultipleUserAttributesByUsername, usernames)
 	if err != nil {
 		return nil, fmt.Errorf("error querying user attributes: %w", err)
 	}
