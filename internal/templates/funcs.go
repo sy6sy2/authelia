@@ -1,6 +1,7 @@
 package templates
 
 import (
+	"bytes"
 	"crypto/sha1" //nolint:gosec
 	"crypto/sha256"
 	"crypto/sha512"
@@ -14,6 +15,7 @@ import (
 	"path"
 	"path/filepath"
 	"reflect"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -21,6 +23,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"gopkg.in/yaml.v3"
 )
 
 // FuncMap returns the template FuncMap commonly used in several templates.
@@ -88,6 +91,12 @@ func FuncMap() map[string]any {
 		"uuidv4":      FuncUUIDv4,
 		"urlquery":    url.QueryEscape,
 		"urlunquery":  url.QueryUnescape,
+		"walk":        FuncWalk,
+
+		"fromYaml":     FuncFromYAML,
+		"toYaml":       FuncToYAML,
+		"toYamlPretty": FuncToYAMLPretty,
+		"toYamlCustom": FuncToYAMLCustom,
 	}
 }
 
@@ -489,4 +498,83 @@ func FuncSecret(path string) (data string, err error) {
 	}
 
 	return strings.TrimRight(data, "\n"), nil
+}
+
+type WalkInfo struct {
+	Path string
+
+	os.FileInfo
+}
+
+func (w WalkInfo) FullPath() string {
+	return filepath.Join(w.Path, w.FileInfo.Name())
+}
+
+func FuncWalk(path, pattern string, skipDir bool) (infos []WalkInfo, err error) {
+	var rePattern *regexp.Regexp
+
+	infos = []WalkInfo{}
+
+	if pattern != "" {
+		if rePattern, err = regexp.Compile(pattern); err != nil {
+			return nil, fmt.Errorf("error occurred compiling walk pattern: %w", err)
+		}
+	}
+
+	if err = filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
+		walkinfo := WalkInfo{
+			Path:     path,
+			FileInfo: info,
+		}
+
+		if skipDir && walkinfo.IsDir() {
+			return nil
+		}
+
+		if rePattern != nil && !rePattern.MatchString(filepath.Join(path, walkinfo.Name())) {
+			return nil
+		}
+
+		infos = append(infos, walkinfo)
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return infos, nil
+}
+
+func FuncFromYAML(yml string) (object map[string]any, err error) {
+	object = map[string]any{}
+
+	if err = yaml.Unmarshal([]byte(yml), &object); err != nil {
+		return nil, err
+	}
+
+	return object, nil
+}
+
+func FuncToYAML(object any) (yml string, err error) {
+	return FuncToYAMLCustom(object, -1)
+}
+
+func FuncToYAMLPretty(object any) (yml string, err error) {
+	return FuncToYAMLCustom(object, 2)
+}
+
+func FuncToYAMLCustom(object any, indent int) (yml string, err error) {
+	var data bytes.Buffer
+
+	encoder := yaml.NewEncoder(&data)
+
+	if indent >= 0 {
+		encoder.SetIndent(indent)
+	}
+
+	if err = encoder.Encode(object); err != nil {
+		return "", err
+	}
+
+	return strings.TrimSuffix(data.String(), "\n"), nil
 }

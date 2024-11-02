@@ -202,6 +202,13 @@ func TestShouldValidateConfigurationWithFilters(t *testing.T) {
 	}
 }
 
+func TestShouldValidateConfigurationWithFiltersX(t *testing.T) {
+	val := schema.NewStructValidator()
+	_, config, err := Load(val, NewDefaultSourcesFiltered([]string{"./test_resources/walk.yml"}, []BytesFilter{NewTemplateFileFilter()}, DefaultEnvPrefix, DefaultEnvDelimiter)...)
+	assert.NoError(t, err)
+	assert.NotNil(t, config)
+}
+
 func TestShouldReadFilesWithFiltersSingleFile(t *testing.T) {
 	testSetEnv(t, "SESSION_SECRET", "abc")
 	testSetEnv(t, "STORAGE_MYSQL_PASSWORD", "abc")

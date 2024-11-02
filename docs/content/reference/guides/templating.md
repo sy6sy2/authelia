@@ -55,56 +55,59 @@ The following functions which mimic the behavior of helm exist in most templatin
 - split
 - splitList
 - join
-- contains
-- hasPrefix
-- hasSuffix
-- lower
-- upper
-- title
-- trim
-- trimAll
-- trimSuffix
-- trimPrefix
-- replace
-- quote
-- sha1sum
-- sha256sum
+- [contains](https://helm.sh/docs/chart_template_guide/function_list/#string-functions)
+- [hasPrefix](https://helm.sh/docs/chart_template_guide/function_list/#string-functions)
+- [hasSuffix](https://helm.sh/docs/chart_template_guide/function_list/#string-functions)
+- [lower](https://helm.sh/docs/chart_template_guide/function_list/#string-functions)
+- [upper](https://helm.sh/docs/chart_template_guide/function_list/#string-functions)
+- [title](https://helm.sh/docs/chart_template_guide/function_list/#string-functions)
+- [trim](https://helm.sh/docs/chart_template_guide/function_list/#string-functions)
+- [trimAll](https://helm.sh/docs/chart_template_guide/function_list/#string-functions)
+- [trimSuffix](https://helm.sh/docs/chart_template_guide/function_list/#string-functions)
+- [trimPrefix](https://helm.sh/docs/chart_template_guide/function_list/#string-functions)
+- [replace](https://helm.sh/docs/chart_template_guide/function_list/#string-functions)
+- [quote](https://helm.sh/docs/chart_template_guide/function_list/#string-functions)
+- [sha1sum](https://helm.sh/docs/chart_template_guide/function_list/#sha1sum)
+- [sha256sum](https://helm.sh/docs/chart_template_guide/function_list/#sha256sum)
 - sha512sum
-- squote
-- now
-- keys
-- sortAlpha
-- b64enc
-- b64dec
-- b32enc
-- b32dec
-- list
-- dict
-- get
-- set
-- isAbs
-- base
-- dir
-- ext
-- clean
+- [squote](https://helm.sh/docs/chart_template_guide/function_list/#string-functions)
+- [now](https://helm.sh/docs/chart_template_guide/function_list/#now)
+- [keys](https://helm.sh/docs/chart_template_guide/function_list/#keys)
+- [sortAlpha](https://helm.sh/docs/chart_template_guide/function_list/#keys)
+- [b64enc](https://helm.sh/docs/chart_template_guide/function_list/#encoding-functions)
+- [b64dec](https://helm.sh/docs/chart_template_guide/function_list/#encoding-functions)
+- [b32enc](https://helm.sh/docs/chart_template_guide/function_list/#encoding-functions)
+- [b32dec](https://helm.sh/docs/chart_template_guide/function_list/#encoding-functions)
+- [list](https://helm.sh/docs/chart_template_guide/function_list/#lists-and-list-functions)
+- [dict](https://helm.sh/docs/chart_template_guide/function_list/#dictionaries-and-dict-functions)
+- [get](https://helm.sh/docs/chart_template_guide/function_list/#dictionaries-and-dict-functions)
+- [set](https://helm.sh/docs/chart_template_guide/function_list/#dictionaries-and-dict-functions)
+- [isAbs](https://helm.sh/docs/chart_template_guide/function_list/#file-path-functions)
+- [base](https://helm.sh/docs/chart_template_guide/function_list/#file-path-functions)
+- [dir](https://helm.sh/docs/chart_template_guide/function_list/#file-path-functions)
+- [ext](https://helm.sh/docs/chart_template_guide/function_list/#file-path-functions)
+- [clean](https://helm.sh/docs/chart_template_guide/function_list/#file-path-functions)
 - osBase
 - osClean
 - osDir
 - osExt
 - osIsAbs
-- deepEqual
-- typeOf
-- typeIs
-- typeIsLike
-- kindOf
-- kindIs
-- default
-- empty
-- indent
-- nindent
-- uuidv4
-- urlquery
+- [deepEqual](https://helm.sh/docs/chart_template_guide/function_list/#type-functions)
+- [typeOf](https://helm.sh/docs/chart_template_guide/function_list/#type-functions)
+- [typeIs](https://helm.sh/docs/chart_template_guide/function_list/#type-functions)
+- [typeIsLike](https://helm.sh/docs/chart_template_guide/function_list/#type-functions)
+- [kindOf](https://helm.sh/docs/chart_template_guide/function_list/#kind-functions)
+- [kindIs](https://helm.sh/docs/chart_template_guide/function_list/#kind-functions)
+- [default](https://helm.sh/docs/chart_template_guide/function_list/#logic-and-flow-control-functions)
+- [empty](https://helm.sh/docs/chart_template_guide/function_list/#logic-and-flow-control-functions)
+- [indent](https://helm.sh/docs/chart_template_guide/function_list/#string-functions)
+- [nindent](https://helm.sh/docs/chart_template_guide/function_list/#string-functions)
+- [uuidv4](https://helm.sh/docs/chart_template_guide/function_list/#string-functions)
+- [urlquery](https://helm.sh/docs/chart_template_guide/function_list/#url-functions)
 - urlunquery (opposite of urlquery)
+- [fromYaml](https://helm.sh/docs/chart_template_guide/function_list/#type-conversion-functions)
+- [toYaml](https://helm.sh/docs/chart_template_guide/function_list/#type-conversion-functions)
+- [toYamlPretty](https://helm.sh/docs/chart_template_guide/function_list/#type-conversion-functions)
 
 See the [Helm Documentation](https://helm.sh/docs/chart_template_guide/function_list/) for more information. Please
 note that only the functions listed above are supported and the functions don't necessarily behave exactly the same.
@@ -184,3 +187,41 @@ quote char is `"` instead of `'`).
 Similar to the `squote` function except it skips quoting for strings with multiple lines.
 
 See the [mindent example](#mindent-example) for an example usage.
+
+#### walk
+
+The `walk` function takes three arguments, `path` (string), `pattern` (string), and `skipDir` (boolean). It's a function
+which walks an entire tree of a given path and produces a list of structs with the following spec for every file in
+that path:
+
+```go
+type WalkInfo struct {
+  Path     string
+  Name     string
+  FullPath string
+  Size     int64
+  Mode     os.FileMode
+  Modified time.Time
+  IsDir    bool
+}
+```
+
+The `path` must be defined and must be a valid file path.
+
+If `pattern` is defined it must be a valid go regex pattern and the full file path and name is evaluated against the
+pattern.
+
+If `skipDir` is true any directories will be removed from the results.
+
+Examples:
+
+```
+{{ range (walk "/opt/data" "" false) }}
+{{ .FullPath }}
+{{ end }}
+```
+
+#### toYamlCustom
+
+Converts an object into a YAML string with custom space indentation. Takes two inputs the first being the same as
+`toYaml` the second being the number of spaces to indent the YAML with.
