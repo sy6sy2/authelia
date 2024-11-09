@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"io"
@@ -15,10 +16,76 @@ import (
 	"gopkg.in/yaml.v3"
 
 	"github.com/authelia/authelia/v4/internal/configuration"
+	"github.com/authelia/authelia/v4/internal/configuration/schema"
 	"github.com/authelia/authelia/v4/internal/model"
 	"github.com/authelia/authelia/v4/internal/random"
 	"github.com/authelia/authelia/v4/internal/utils"
 )
+
+func newUtilCmd(ctx *CmdCtx) (cmd *cobra.Command) {
+	cmd = &cobra.Command{
+		Use:     "util",
+		Short:   "",
+		Long:    "",
+		Example: "",
+		Args:    cobra.NoArgs,
+
+		DisableAutoGenTag: true,
+	}
+
+	cmd.AddCommand(
+		newUtilTLSCmd(ctx),
+	)
+
+	return cmd
+}
+
+func newUtilTLSCmd(ctx *CmdCtx) (cmd *cobra.Command) {
+	cmd = &cobra.Command{
+		Use:     "tls",
+		Short:   "",
+		Long:    "",
+		Example: "",
+		Args:    cobra.ExactArgs(1),
+		RunE:    ctx.UtilTLSRunE,
+		PreRunE: ctx.ChainRunE(
+			ctx.HelperConfigLoadRunE,
+			ctx.HelperConfigValidateKeysRunE,
+			ctx.HelperConfigValidateRunE,
+		),
+		DisableAutoGenTag: true,
+	}
+
+	cmd.Flags().String("address", "", "address of the remote server")
+	return cmd
+}
+
+func (ctx *CmdCtx) UtilTLSRunE(cmd *cobra.Command, args []string) (err error) {
+	var (
+		address *schema.Address
+		conn    *tls.Conn
+	)
+
+	if address, err = schema.NewAddress(args[0]); err != nil {
+		return err
+	}
+
+	config := &tls.Config{
+		ServerName:         address.Hostname(),
+		InsecureSkipVerify: false,
+		MinVersion:         tls.VersionTLS12,
+		MaxVersion:         tls.VersionTLS12,
+		RootCAs:            ctx.trusted,
+	}
+
+	if conn, err = tls.Dial(address.Network(), address.NetworkAddress(), config); err != nil {
+		return err
+	}
+
+	fmt.Println("Connected successfully")
+
+	return conn.Close()
+}
 
 func recoverErr(i any) error {
 	switch v := i.(type) {

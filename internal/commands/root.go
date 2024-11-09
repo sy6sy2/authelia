@@ -48,6 +48,7 @@ func NewRootCmd() (cmd *cobra.Command) {
 		newStorageCmd(ctx),
 		newConfigCmd(ctx),
 		newConfigValidateLegacyCmd(ctx),
+		newUtilCmd(ctx),
 
 		newHelpTopic("config", "Help for the config file/directory paths", helpTopicConfig),
 		newHelpTopic("filters", "help topic for the config filters", helpTopicConfigFilters),
