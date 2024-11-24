@@ -448,3 +448,9 @@ func (export WebAuthnCredentialExport) ToData() WebAuthnCredentialDataExport {
 func (export WebAuthnCredentialExport) MarshalYAML() (any, error) {
 	return export.ToData(), nil
 }
+
+type PasskeyDeveloperAAGUID struct {
+	Name      string `json:"name"`
+	IconDark  string `json:"icon_dark,omitempty"`
+	IconLight string `json:"icon_light,omitempty"`
+}

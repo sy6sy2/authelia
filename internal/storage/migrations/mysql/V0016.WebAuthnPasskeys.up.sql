@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS cached_data (
     updated_at TIMESTAMP NOT NULL,
     name VARCHAR(20) NOT NULL,
     encrypted BOOLEAN NOT NULL DEFAULT FALSE,
+    tag NULL DEFAULT NULL,
     value BLOB NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 

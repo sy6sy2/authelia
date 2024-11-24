@@ -169,6 +169,10 @@ func (ctx *CmdCtx) LoadProviders() (warns, errs []error) {
 		errs = append(errs, err)
 	}
 
+	if ctx.providers.PasskeyMetadata, err = webauthn.NewPasskeyMetaDataProvider(ctx.config, ctx.providers.StorageProvider); err != nil {
+		errs = append(errs, err)
+	}
+
 	switch {
 	case ctx.config.Notifier.SMTP != nil:
 		ctx.providers.Notifier = notification.NewSMTPNotifier(ctx.config.Notifier.SMTP, ctx.trusted)

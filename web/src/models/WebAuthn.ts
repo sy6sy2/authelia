@@ -157,3 +157,9 @@ export enum WebAuthnTouchState {
     InProgress = 2,
     Failure = 3,
 }
+
+export interface WebAuthnAAGUIDInformation {
+    name: string;
+    icon_light?: string;
+    icon_dark?: string;
+}

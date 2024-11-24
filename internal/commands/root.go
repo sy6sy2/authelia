@@ -154,6 +154,14 @@ func doStartupChecks(ctx *CmdCtx) {
 		ctx.log.WithFields(map[string]any{logFieldProvider: providerNameWebAuthnMetaData}).Trace("Startup Check Completed Successfully")
 	}
 
+	if err = doStartupCheck(ctx, providerNamePasskeyMetaData, ctx.providers.PasskeyMetadata, !ctx.config.WebAuthn.Metadata.Enabled || ctx.providers.PasskeyMetadata == nil); err != nil {
+		ctx.log.WithError(err).WithField(logFieldProvider, providerNamePasskeyMetaData).Error(logMessageStartupCheckError)
+
+		failures = append(failures, providerNamePasskeyMetaData)
+	} else {
+		ctx.log.WithFields(map[string]any{logFieldProvider: providerNamePasskeyMetaData}).Trace("Startup Check Completed Successfully")
+	}
+
 	if len(failures) != 0 {
 		ctx.log.WithField("providers", failures).Fatalf("One or more providers had fatal failures performing startup checks, for more detail check the error level logs")
 	}

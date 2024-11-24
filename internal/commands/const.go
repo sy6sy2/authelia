@@ -909,6 +909,7 @@ const (
 	providerNameUser             = "user"
 	providerNameNotification     = "notification"
 	providerNameWebAuthnMetaData = "webauthn-metadata"
+	providerNamePasskeyMetaData  = "passkey-metadata"
 )
 
 const (

@@ -5,8 +5,9 @@ import Grid from "@mui/material/Grid2";
 import { useTranslation } from "react-i18next";
 
 import { UserInfo } from "@models/UserInfo";
-import { WebAuthnCredential } from "@models/WebAuthn";
+import { WebAuthnAAGUIDInformation, WebAuthnCredential } from "@models/WebAuthn";
 import { UserSessionElevation, getUserSessionElevation } from "@services/UserSessionElevation";
+import { getWebAuthnAAGUIDInfo } from "@services/WebAuthn.ts";
 import IdentityVerificationDialog from "@views/Settings/Common/IdentityVerificationDialog";
 import SecondFactorDialog from "@views/Settings/Common/SecondFactorDialog";
 import WebAuthnCredentialDeleteDialog from "@views/Settings/TwoFactorAuthentication/WebAuthnCredentialDeleteDialog";
@@ -19,6 +20,10 @@ interface Props {
     info?: UserInfo;
     credentials: WebAuthnCredential[] | undefined;
     handleRefreshState: () => void;
+}
+
+interface Metadata {
+    [Key: number]: WebAuthnAAGUIDInformation | undefined;
 }
 
 const WebAuthnCredentialsPanel = function (props: Props) {
@@ -42,6 +47,33 @@ const WebAuthnCredentialsPanel = function (props: Props) {
     const [dialogDeleteOpen, setDialogDeleteOpen] = useState(false);
     const [dialogDeleteOpening, setDialogDeleteOpening] = useState(false);
     const [indexDelete, setIndexDelete] = useState(-1);
+
+    const [metadata, setMetadata] = useState<Metadata>({});
+
+    const handleGetMetadata = useCallback(
+        async (index: number) => {
+            if (index in metadata) {
+                return;
+            }
+
+            if (!props.credentials) {
+                return;
+            }
+
+            const credential = props.credentials[index];
+
+            if (credential === null || !credential.aaguid) {
+                return;
+            }
+
+            const response = await getWebAuthnAAGUIDInfo(credential.aaguid);
+
+            setMetadata({ ...metadata, [index]: response });
+
+            return;
+        },
+        [metadata, props.credentials],
+    );
 
     const handleResetStateOpening = () => {
         setDialogSFOpening(false);
@@ -162,8 +194,10 @@ const WebAuthnCredentialsPanel = function (props: Props) {
 
         if (props.credentials.length + 1 < index) return;
 
-        setIndexInformation(index);
-        setDialogInformationOpen(true);
+        handleGetMetadata(index).then(() => {
+            setIndexInformation(index);
+            setDialogInformationOpen(true);
+        });
     };
 
     const handleEdit = (index: number) => {
@@ -214,6 +248,7 @@ const WebAuthnCredentialsPanel = function (props: Props) {
                 credential={
                     indexInformation === -1 || !props.credentials ? undefined : props.credentials[indexInformation]
                 }
+                metadata={indexInformation === -1 ? undefined : metadata[indexInformation]}
                 open={dialogInformationOpen}
                 handleClose={() => {
                     setDialogInformationOpen(false);
@@ -259,7 +294,9 @@ const WebAuthnCredentialsPanel = function (props: Props) {
                         </Tooltip>
                     </Grid>
                     <Grid size={{ xs: 12 }}>
-                        {props.credentials === undefined || props.credentials.length === 0 ? (
+                        {props.credentials === undefined ||
+                        props.credentials === null ||
+                        props.credentials.length === 0 ? (
                             <Typography variant={"subtitle2"}>
                                 {translate(
                                     "No WebAuthn Credentials have been registered if you'd like to register one click add",

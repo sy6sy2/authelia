@@ -17,6 +17,7 @@ export const WebAuthnRegistrationPath = basePath + "/api/secondfactor/webauthn/c
 export const WebAuthnAssertionPath = basePath + "/api/secondfactor/webauthn";
 export const WebAuthnCredentialsPath = basePath + "/api/secondfactor/webauthn/credentials";
 export const WebAuthnCredentialPath = basePath + "/api/secondfactor/webauthn/credential";
+export const WebAuthnAAGUIDInformationPath = basePath + "/api/info/webauthn/aaguid";
 
 export const InitiateDuoDeviceSelectionPath = basePath + "/api/secondfactor/duo_devices";
 export const CompleteDuoDeviceSelectionPath = basePath + "/api/secondfactor/duo_device";
@@ -100,4 +101,8 @@ export function validateStatusOneTimeCode(status: number) {
 
 export function validateStatusWebAuthnCreation(status: number) {
     return status < 300 || status === 409;
+}
+
+export function validateStatusMetadata(status: number) {
+    return (status >= 200 && status < 300) || status === 401 || status === 403 || status === 404;
 }

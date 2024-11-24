@@ -87,15 +87,6 @@ func TimeBasedOneTimePasswordPOST(ctx *middlewares.AutheliaCtx) {
 		return
 	}
 
-	if userSession.IsAnonymous() {
-		ctx.Logger.WithError(errUserAnonymous).Error("Error occurred validating a TOTP authentication")
-
-		ctx.SetStatusCode(fasthttp.StatusForbidden)
-		ctx.SetJSONError(messageMFAValidationFailed)
-
-		return
-	}
-
 	if err = ctx.ParseBody(&bodyJSON); err != nil {
 		ctx.Logger.WithError(err).Errorf("Error occurred validating a TOTP authentication for user '%s': %s", userSession.Username, errStrReqBodyParse)
 

@@ -101,8 +101,7 @@ func UserInfoGET(ctx *middlewares.AutheliaCtx) {
 
 	userInfo.DisplayName = userSession.DisplayName
 
-	err = ctx.SetJSONBody(userInfo)
-	if err != nil {
+	if err = ctx.SetJSONBody(userInfo); err != nil {
 		ctx.Logger.Errorf("Unable to set user info response in body: %+v", err)
 	}
 }

@@ -5,4 +5,5 @@ const (
 	ExtensionCredPropsResidentKey = "rk"
 	LogFieldDiscoverable          = "discoverable"
 	cacheMDS3                     = "mds3"
+	cachePasskey                  = "passkey"
 )

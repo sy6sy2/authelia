@@ -272,7 +272,7 @@ func (p *StoreCachedMetadataProvider) saveCache(ctx context.Context, data []byte
 		return fmt.Errorf("error saving metadata cache to database: data is empty")
 	}
 
-	cache := model.CachedData{Name: cacheMDS3, Value: data}
+	cache := model.CachedData{Name: cacheMDS3, Encrypted: true, Value: data}
 
 	if err = p.store.SaveCachedData(ctx, cache); err != nil {
 		return fmt.Errorf("error saving metadata cache to database: %w", err)

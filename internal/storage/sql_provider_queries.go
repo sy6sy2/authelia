@@ -294,17 +294,17 @@ const (
 
 const (
 	queryFmtUpsertCachedData = `
-		REPLACE INTO %s (updated_at, name, encrypted, value)
-		VALUES (CURRENT_TIMESTAMP, ?, ?, ?);`
+		REPLACE INTO %s (updated_at, name, encrypted, tag, value)
+		VALUES (CURRENT_TIMESTAMP, ?, ?, ?, ?);`
 
 	queryFmtUpsertCachedDataPostgreSQL = `
-		INSERT INTO %s (updated_at, name, encrypted, value)
-		VALUES (CURRENT_TIMESTAMP, $1, $2, $3)
+		INSERT INTO %s (updated_at, name, encrypted, tag, value)
+		VALUES (CURRENT_TIMESTAMP, $1, $2, $3, $4)
 			ON CONFLICT (name)
-			DO UPDATE SET encrypted = $2, value = $3;`
+			DO UPDATE SET updated_at = CURRENT_TIMESTAMP, encrypted = $2, tag = $3, value = $4;`
 
 	queryFmtSelectCachedData = `
-		SELECT id, created_at, updated_at, name, encrypted, value
+		SELECT id, created_at, updated_at, name, encrypted, tag, value
 		FROM %s
 		WHERE name = ?;`
 

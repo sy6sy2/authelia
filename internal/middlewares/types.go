@@ -50,6 +50,7 @@ type Providers struct {
 	PasswordPolicy  PasswordPolicyProvider
 	Random          random.Provider
 	MetaDataService webauthn.MetaDataProvider
+	PasskeyMetadata webauthn.PasskeyMetadataProvider
 }
 
 // RequestHandler represents an Authelia request handler.

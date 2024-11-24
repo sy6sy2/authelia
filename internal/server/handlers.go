@@ -301,6 +301,10 @@ func handleRouter(config *schema.Configuration, providers middlewares.Providers)
 			r.POST("/api/secondfactor/password", middleware1FA(handlers.SecondFactorPasswordPOST(funcDelayPassword)))
 		}
 
+		if config.WebAuthn.Metadata.Enabled {
+			r.POST("/api/info/webauthn/aaguid", middleware1FA(handlers.WebAuthnAAGUIDInfoPOST))
+		}
+
 		// Management of the WebAuthn credentials.
 		r.GET("/api/secondfactor/webauthn/credentials", middleware1FA(handlers.WebAuthnCredentialsGET))
 

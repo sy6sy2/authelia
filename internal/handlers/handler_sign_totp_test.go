@@ -509,27 +509,6 @@ func (s *HandlerSignTOTPSuite) TestShouldHandleExistsHistory() {
 	s.AssertLastLogMessage("Error occurred validating a TOTP authentication for user 'john': error occurred satisfying security policies", "the user has already used this code recently and will not be permitted to reuse it")
 }
 
-func (s *HandlerSignTOTPSuite) TestShouldHandleAnonymous() {
-	us, err := s.mock.Ctx.GetSession()
-
-	s.Require().NoError(err)
-
-	us.Username = ""
-
-	s.Require().NoError(s.mock.Ctx.SaveSession(us))
-
-	bodyBytes, err := json.Marshal(bodySignTOTPRequest{
-		Token: "abc",
-	})
-	s.Require().NoError(err)
-	s.mock.Ctx.Request.SetBody(bodyBytes)
-
-	TimeBasedOneTimePasswordPOST(s.mock.Ctx)
-	s.mock.Assert403KO(s.T(), "Authentication failed, please retry later.")
-
-	s.AssertLastLogMessage("Error occurred validating a TOTP authentication", "user is anonymous")
-}
-
 func (s *HandlerSignTOTPSuite) TestShouldHandleGETAnonymous() {
 	us, err := s.mock.Ctx.GetSession()
 

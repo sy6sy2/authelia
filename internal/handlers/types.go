@@ -207,6 +207,10 @@ type PasswordPolicyBody struct {
 	RequireSpecial   bool   `json:"require_special"`
 }
 
+type bodyRequestWebAuthnAAGUID struct {
+	AAGUID string `json:"aaguid"`
+}
+
 type handlerAuthorizationConsent func(
 	ctx *middlewares.AutheliaCtx, issuer *url.URL, client oidc.Client,
 	userSession session.UserSession, subject uuid.UUID,

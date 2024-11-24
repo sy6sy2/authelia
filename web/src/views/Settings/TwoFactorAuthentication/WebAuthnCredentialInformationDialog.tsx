@@ -2,6 +2,7 @@ import React, { Fragment } from "react";
 
 import {
     Alert,
+    Box,
     Button,
     Dialog,
     DialogActions,
@@ -15,17 +16,20 @@ import Grid from "@mui/material/Grid2";
 import { useTranslation } from "react-i18next";
 
 import CopyButton from "@components/CopyButton";
+import { useThemeContext } from "@contexts/ThemeContext.tsx";
 import { FormatDateHumanReadable } from "@i18n/formats";
-import { WebAuthnCredential, toAttachmentName, toTransportName } from "@models/WebAuthn";
+import { WebAuthnAAGUIDInformation, WebAuthnCredential, toAttachmentName, toTransportName } from "@models/WebAuthn";
 
 interface Props {
     open: boolean;
     credential?: WebAuthnCredential;
+    metadata?: WebAuthnAAGUIDInformation;
     handleClose: () => void;
 }
 
 const WebAuthnCredentialInformationDialog = function (props: Props) {
     const { t: translate } = useTranslation("settings");
+    const { theme } = useThemeContext();
 
     return (
         <Dialog open={props.open} onClose={props.handleClose} aria-labelledby="webauthn-credential-info-dialog-title">
@@ -60,6 +64,24 @@ const WebAuthnCredentialInformationDialog = function (props: Props) {
                             <Grid size={{ xs: 12 }}>
                                 <Divider />
                             </Grid>
+                            {props.metadata ? (
+                                <Grid>
+                                    <Box
+                                        component={"img"}
+                                        sx={{ height: 50, width: 50 }}
+                                        src={
+                                            theme.palette.mode === "dark"
+                                                ? props.metadata.icon_dark
+                                                : props.metadata.icon_light
+                                        }
+                                    ></Box>
+                                </Grid>
+                            ) : null}
+                            <PropertyText
+                                name={translate("Model")}
+                                value={props.metadata ? props.metadata.name : "Unknown"}
+                            />
+                            <PropertyText name={translate("Color Mode")} value={theme.palette.mode} />
                             <PropertyText name={translate("Description")} value={props.credential.description} />
                             <PropertyText name={translate("Relying Party ID")} value={props.credential.rpid} />
                             <PropertyText

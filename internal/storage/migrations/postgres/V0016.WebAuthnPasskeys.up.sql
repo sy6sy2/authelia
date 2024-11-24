@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS cached_data (
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
     name VARCHAR(20) NOT NULL,
     encrypted BOOLEAN NOT NULL DEFAULT FALSE,
+    tag NULL DEFAULT NULL,
     value BYTEA NOT NULL
 );
 

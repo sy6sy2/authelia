@@ -26,9 +26,30 @@ export default function ThemeContextProvider(props: Props) {
     const [themeName, setThemeName] = useState(GetCurrentThemeName());
     const isLocalStorageAvailable = localStorageAvailable();
 
+    const mediaQueryListener = useCallback((ev: MediaQueryListEvent) => {
+        setTheme(ev.matches ? themes.Dark : themes.Light);
+    }, []);
+
+    const storageListener = (ev: StorageEvent) => {
+        console.log("storage event");
+        if (ev.key !== LocalStorageThemeName) {
+            console.log(`storage event: wrong key ${ev.key}`);
+            return;
+        }
+
+        console.log(`storage event: correct key ${ev.key}`);
+
+        if (ev.newValue && ev.newValue !== "") {
+            setThemeName(ev.newValue);
+        } else {
+            setThemeName(getUserThemeName());
+        }
+    };
+
     useEffect(() => {
         if (themeName === themes.ThemeNameAuto) {
             const query = window.matchMedia(MediaQueryDarkMode);
+
             if (query.addEventListener) {
                 query.addEventListener("change", mediaQueryListener);
 
@@ -38,32 +59,17 @@ export default function ThemeContextProvider(props: Props) {
             }
         }
 
-        setTheme(ThemeFromName(themeName));
-    }, [themeName]);
+        const theme = ThemeFromName(themeName);
+
+        setTheme(theme);
+    }, [mediaQueryListener, themeName]);
 
     useEffect(() => {
         window.addEventListener("storage", storageListener);
-
         return () => {
             window.removeEventListener("storage", storageListener);
         };
     }, []);
-
-    const storageListener = (ev: StorageEvent): any => {
-        if (ev.key !== LocalStorageThemeName) {
-            return;
-        }
-
-        if (ev.newValue && ev.newValue !== "") {
-            setThemeName(ev.newValue);
-        } else {
-            setThemeName(getUserThemeName());
-        }
-    };
-
-    const mediaQueryListener = (ev: MediaQueryListEvent) => {
-        setTheme(ev.matches ? themes.Dark : themes.Light);
-    };
 
     const callback = useCallback(
         (name: string) => {

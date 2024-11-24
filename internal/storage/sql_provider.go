@@ -1429,7 +1429,7 @@ func (p *SQLProvider) SaveCachedData(ctx context.Context, data model.CachedData)
 		}
 	}
 
-	if _, err = p.db.ExecContext(ctx, p.sqlUpsertCachedData, data.Name, data.Encrypted, data.Value); err != nil {
+	if _, err = p.db.ExecContext(ctx, p.sqlUpsertCachedData, data.Name, data.Encrypted, data.Tag, data.Value); err != nil {
 		return fmt.Errorf("error inserting cached data with name '%s': %w", data.Name, err)
 	}
 

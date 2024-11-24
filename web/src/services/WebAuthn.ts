@@ -16,16 +16,20 @@ import {
     PublicKeyCredentialCreationOptionsStatus,
     PublicKeyCredentialRequestOptionsStatus,
     RegistrationResult,
+    WebAuthnAAGUIDInformation,
 } from "@models/WebAuthn";
 import {
     AuthenticationOKResponse,
     FirstFactorPasskeyPath,
     OptionalDataServiceResponse,
+    Response,
     ServiceResponse,
+    WebAuthnAAGUIDInformationPath,
     WebAuthnAssertionPath,
     WebAuthnCredentialPath,
     WebAuthnRegistrationPath,
     validateStatusAuthentication,
+    validateStatusMetadata,
     validateStatusWebAuthnCreation,
 } from "@services/Api";
 import { SignInResponse } from "@services/SignIn";
@@ -292,4 +296,19 @@ export async function updateUserWebAuthnCredential(credentialID: string, descrip
         data: { description: description },
         validateStatus: validateStatusAuthentication,
     });
+}
+
+export async function getWebAuthnAAGUIDInfo(aaguid: string) {
+    const response = await axios<Response<WebAuthnAAGUIDInformation>>({
+        method: "POST",
+        url: WebAuthnAAGUIDInformationPath,
+        data: { aaguid: aaguid },
+        validateStatus: validateStatusMetadata,
+    });
+
+    if (response.status !== 200) {
+        return undefined;
+    }
+
+    return response.data.data;
 }
